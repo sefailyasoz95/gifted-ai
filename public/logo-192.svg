@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Robot head -->
+  <rect x="48" y="24" width="96" height="86.4" rx="14.4" stroke="black" stroke-width="9.6"/>
+  
+  <!-- Robot display screen -->
+  <rect x="62.4" y="38.4" width="67.2" height="38.4" rx="4.8" stroke="black" stroke-width="7.2"/>
+  
+  <!-- Robot digital eyes -->
+  <rect x="72" y="48" width="19.2" height="19.2" fill="black"/>
+  <rect x="100.8" y="48" width="19.2" height="19.2" fill="black"/>
+  
+  <!-- Robot antenna -->
+  <circle cx="96" cy="9.6" r="7.2" fill="black"/>
+  <line x1="96" y1="9.6" x2="96" y2="24" stroke="black" stroke-width="9.6" stroke-linecap="round"/>
+  
+  <!-- Robot neck -->
+  <rect x="81.6" y="110.4" width="28.8" height="14.4" stroke="black" stroke-width="7.2"/>
+  
+  <!-- Camera body -->
+  <rect x="57.6" y="124.8" width="76.8" height="48" rx="9.6" stroke="black" stroke-width="9.6"/>
+  
+  <!-- Camera lens -->
+  <circle cx="96" cy="148.8" r="16.8" stroke="black" stroke-width="9.6"/>
+  <circle cx="96" cy="148.8" r="7.2" fill="black"/>
+  
+  <!-- Camera flash -->
+  <rect x="72" y="115.2" width="19.2" height="9.6" fill="black"/>
+  
+  <!-- Robot arms -->
+  <path d="M48 148.8 C 28.8 148.8, 28.8 134.4, 38.4 134.4" stroke="black" stroke-width="9.6" stroke-linecap="round"/>
+  <path d="M144 148.8 C 163.2 148.8, 163.2 134.4, 153.6 134.4" stroke="black" stroke-width="9.6" stroke-linecap="round"/>
+  
+  <!-- Circuit patterns -->
+  <line x1="62.4" y1="91.2" x2="81.6" y2="91.2" stroke="black" stroke-width="7.2" stroke-linecap="round"/>
+  <line x1="110.4" y1="91.2" x2="129.6" y2="91.2" stroke="black" stroke-width="7.2" stroke-linecap="round"/>
+</svg>
