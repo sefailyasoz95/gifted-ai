@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateGiftIdeas } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import { getLocationInfo, LocationInfo } from '@/lib/location-utils';
 
 interface GiftIdeaGeneratorResult {
   loading: boolean;
   error: string | null;
-  generateGiftIdeasForImages: (files: File[], relationshipContext: string) => Promise<void>;
+  generateGiftIdeasForImages: (
+    files: File[],
+    relationshipContext: string,
+    priceRange?: { minPrice: number; maxPrice: number }
+  ) => Promise<void>;
   giftIdeas: string[] | null;
 }
 
@@ -15,6 +20,20 @@ export function useGiftIdeaGenerator(): GiftIdeaGeneratorResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [giftIdeas, setGiftIdeas] = useState<string[] | null>(null);
+  const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+
+  // Fetch location info on mount
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        const info = await getLocationInfo();
+        setLocationInfo(info);
+      } catch (error) {
+        console.error('Failed to get location info:', error);
+      }
+    };
+    fetchLocation();
+  }, []);
 
   const uploadToSupabase = async (file: File): Promise<string> => {
     // Create a unique file name to avoid collisions
@@ -38,7 +57,11 @@ export function useGiftIdeaGenerator(): GiftIdeaGeneratorResult {
     return publicUrl;
   };
 
-  const generateGiftIdeasForImages = async (files: File[], relationshipContext: string) => {
+  const generateGiftIdeasForImages = async (
+    files: File[],
+    relationshipContext: string,
+    priceRange = { minPrice: 0, maxPrice: 1000 }
+  ) => {
     setLoading(true);
     setError(null);
 
@@ -64,28 +87,27 @@ export function useGiftIdeaGenerator(): GiftIdeaGeneratorResult {
         });
 
         // Upload to Supabase Storage
-        const fileName = `gifted-ai-${uuidv4()}-${file.name}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('files')
-          .upload(fileName, file);
-
-        if (uploadError) {
-          throw new Error(`Error uploading file: ${uploadError.message}`);
-        }
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('files')
-          .getPublicUrl(uploadData.path);
+        const publicUrl = await uploadToSupabase(file);
 
         // Generate gift ideas using the full data URL
-        const result = await generateGiftIdeas(base64, relationshipContext);
+        const result = await generateGiftIdeas(
+          base64,
+          relationshipContext,
+          locationInfo || {
+            country: 'United States',
+            countryCode: 'US',
+            language: 'en',
+            currency: 'USD',
+            currencySymbol: '$'
+          },
+          priceRange
+        );
 
         if (!result.success || !result.giftIdeas) {
           // If generation fails, delete the uploaded file
           await supabase.storage
             .from('files')
-            .remove([fileName]);
+            .remove([publicUrl.split('/').pop()!]);
           throw new Error(result.error || 'Failed to generate gift ideas');
         }
 
@@ -112,6 +134,20 @@ export function useGiftIdeaGenerator(): GiftIdeaGeneratorResult {
         .from('posts')
         .insert({
           caption: results.flatMap((result) => result.giftIdeas).join('\n\n'), // Store all gift ideas in the caption field
+          user_input: JSON.stringify({
+            relationshipContext,
+            priceRange: {
+              minPrice: priceRange.minPrice,
+              maxPrice: priceRange.maxPrice
+            },
+            location: locationInfo || {
+              country: 'United States',
+              countryCode: 'US',
+              language: 'en',
+              currency: 'USD',
+              currencySymbol: '$'
+            }
+          }),
           user_id: user?.id,
           user_ip: userIp,
           uploads: results.map((result) => result.publicUrl),

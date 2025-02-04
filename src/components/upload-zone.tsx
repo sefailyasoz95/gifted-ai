@@ -2,12 +2,14 @@
 
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, Image as ImageIcon, X } from "lucide-react";
+import { Upload,  X } from "lucide-react";
 import Image from "next/image";
-import { useGiftIdeaGenerator } from "@/hooks/use-caption-generator";
+import { useGiftIdeaGenerator } from "@/hooks/use-gift-idea-generator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { trackVisitor } from "@/lib/visitor";
 import type { Visitor } from "@/types/visitor";
@@ -18,6 +20,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { getLocationInfo, type LocationInfo } from '@/lib/location-utils';
 
 interface MediaFile extends File {
   preview?: string;
@@ -26,6 +29,9 @@ interface MediaFile extends File {
 export function UploadZone() {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [relationshipContext, setRelationshipContext] = useState("");
+  const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
   const { loading, error, generateGiftIdeasForImages, giftIdeas } = useGiftIdeaGenerator();
   const [showResult, setShowResult] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -44,6 +50,15 @@ export function UploadZone() {
     };
 
     initVisitor();
+  }, []);
+
+  useEffect(() => {
+    // Get location info when component mounts
+    const fetchLocationInfo = async () => {
+      const info = await getLocationInfo();
+      setLocationInfo(info);
+    };
+    fetchLocationInfo();
   }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -75,19 +90,30 @@ export function UploadZone() {
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (files.length === 0) {
-      toast.error("Please upload at least one image");
+      toast.error("Please upload at least one photo");
       return;
     }
 
-    if (!relationshipContext) {
-      toast.error("Please provide relationship context");
+    if (!locationInfo) {
+      toast.error("Failed to retrieve location information");
+      return;
+    }
+
+    if (minPrice > maxPrice) {
+      toast.error("Minimum price cannot be greater than maximum price");
       return;
     }
 
     try {
-      await generateGiftIdeasForImages([files[0]], relationshipContext);
+      await generateGiftIdeasForImages(
+        [files[0]],
+        relationshipContext,
+        { minPrice, maxPrice }
+      );
       setDialogOpen(true);
     } catch (error) {
       console.error('Error generating gift ideas:', error);
@@ -134,7 +160,7 @@ export function UploadZone() {
                 <CarouselContent>
                   {files.map((file, index) => (
                     <CarouselItem key={index} className="basis-full">
-                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
+                      <div className="relative aspect-[4/3] w-10/12 mx-auto overflow-hidden rounded-lg">
                         <Image
                           src={file.preview!}
                           alt={`Preview ${index + 1}`}
@@ -188,21 +214,58 @@ export function UploadZone() {
         )}
 
         <Textarea
-          placeholder="Describe your relationship with the person (e.g., best friend for 5 years, loves hiking and photography)"
+          placeholder="Tell us about the occasion, your relationship, and any specific interests or preferences..."
           value={relationshipContext}
           onChange={(e) => setRelationshipContext(e.target.value)}
           className="min-h-[100px]"
         />
-
-        <Button
-          onClick={handleSubmit}
-          disabled={loading || files.length === 0 || !relationshipContext}
-          className="w-full"
-        >
-          {loading ? "Generating Ideas..." : "Generate Gift Ideas"}
-        </Button>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="minPrice">Minimum Price</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                {locationInfo?.currencySymbol || '$'}
+              </span>
+              <Input
+                id="minPrice"
+                type="number"
+                min={0}
+                value={minPrice}
+                onChange={(e) => setMinPrice(Number(e.target.value))}
+                className="pl-8"
+                placeholder="Min"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="maxPrice">Maximum Price</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                {locationInfo?.currencySymbol || '$'}
+              </span>
+              <Input
+                id="maxPrice"
+                type="number"
+                min={0}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                className="pl-8"
+                placeholder="Max"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
+      <Button
+        onClick={handleSubmit}
+        disabled={loading || files.length === 0 || !relationshipContext || !locationInfo}
+        className="w-full"
+      >
+        {loading ? "Generating Ideas..." : "Generate Gift Ideas"}
+      </Button>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>

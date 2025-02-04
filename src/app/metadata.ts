@@ -1,36 +1,33 @@
 import type { Metadata } from 'next'
 
-const title = 'Gifted-AI - AI-Powered Instagram Caption Generator by Softwarify'
-const description = 'Generate engaging, creative Instagram captions instantly with AI. Upload your photo and get the perfect caption for maximum engagement. A product by Softwarify.'
+const title = 'Gifted-AI: Smart Gift Ideas Generator'
+const description = 'Get AI-powered gift recommendations tailored to your needs. Upload photos and receive personalized gift suggestions for any occasion using advanced Google Gemini AI technology.'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://Gifted-AI.vercel.app'),
+  metadataBase: new URL('https://gifted-ai.vercel.app'),
   title: {
     default: title,
-    template: '%s | Gifted-AI by Softwarify'
+    template: '%s - Gifted-AI'
   },
   description,
   applicationName: 'Gifted-AI',
   referrer: 'origin-when-cross-origin',
   keywords: [
-    'Instagram caption generator',
-    'AI caption generator',
-    'social media caption',
-    'Instagram post helper',
-    'AI writing assistant',
-    'photo caption generator',
-    'Instagram content creation',
-    'social media tools',
-    'Instagram marketing',
-    'AI content generator',
-    'Softwarify tools',
-    'Instagram AI',
-    'social media automation',
-    'content creation tool'
+    'AI gift recommendations',
+    'gift finder AI',
+    'smart gift assistant',
+    'AI shopping helper',
+    'gift ideas generator',
+    'personalized presents',
+    'AI gift guide',
+    'occasion-based gifts',
+    'AI shopping assistant',
+    'gift inspiration',
+    'Google Gemini AI'
   ],
-  authors: [{ name: 'Softwarify', url: 'https://softwarify.co' }],
-  creator: 'Softwarify',
-  publisher: 'Softwarify',
+  authors: [{ name: 'Sefa Oz', url: 'https://github.com/sefailyasoz95' }],
+  creator: 'Sefa Oz',
+  publisher: 'Gifted-AI',
   formatDetection: {
     email: false,
     address: false,
@@ -51,8 +48,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://Gifted-AI.vercel.app',
+    locale: 'en',
+    url: 'https://gifted-ai.vercel.app',
     title,
     description,
     siteName: title,
@@ -61,19 +58,17 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Gifted-AI - AI-Powered Instagram Caption Generator by Softwarify'
+        alt: 'Gifted-AI: Smart Gift Ideas Generator'
       }
     ],
-    countryName: 'United States',
   },
   twitter: {
     card: 'summary_large_image',
     title,
     description,
     images: ['/og-image.png'],
-    creator: '@softwarify',
-    site: '@softwarify',
-    creatorId: '1467726470533754880'
+    creator: '@sefailyasoz',
+    site: '@GiftedAI',
   },
   viewport: {
     width: 'device-width',
@@ -86,24 +81,22 @@ export const metadata: Metadata = {
       { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico' }
     ],
-    shortcut: [
-      { url: '/favicon.svg', type: 'image/svg+xml' }
-    ],
-    apple: [
-      { url: '/apple-icon.png' }
-    ]
+    shortcut: ['/favicon.ico'],
+    apple: ['/apple-icon.png']
   },
   alternates: {
-    canonical: 'https://Gifted-AI.vercel.app',
+    canonical: 'https://gifted-ai.vercel.app',
     languages: {
-      'en-US': 'https://Gifted-AI.vercel.app'
+      'en': 'https://gifted-ai.vercel.app'
     }
   },
   verification: {
-    google: 'your-google-site-verification',
-    yandex: 'your-yandex-verification',
-    yahoo: 'your-yahoo-verification'
+    google: 'ADD_YOUR_GOOGLE_SITE_VERIFICATION',
+    yandex: 'ADD_YOUR_YANDEX_VERIFICATION',
   },
-  category: 'technology',
-  classification: 'AI Tools & Utilities',
+  category: 'AI Tools',
+  classification: 'Gift Recommendations',
+  other: {
+    'content-language': 'en'
+  }
 }

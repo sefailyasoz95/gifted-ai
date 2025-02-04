@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { LocationInfo } from './location-utils';
 
 if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
   throw new Error('Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable');
@@ -12,9 +13,16 @@ interface GiftIdeaResult {
   error?: string;
 }
 
+interface PriceRange {
+  minPrice: number;
+  maxPrice: number;
+}
+
 export async function generateGiftIdeas(
   imageBase64: string,
-  relationshipContext: string
+  relationshipContext: string,
+  locationInfo: LocationInfo,
+  priceRange: PriceRange
 ): Promise<GiftIdeaResult> {
   try {
     // Remove the data URL prefix to get just the base64 data
@@ -26,7 +34,7 @@ export async function generateGiftIdeas(
     // Create model instance with the new model
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
-      systemInstruction: "You are a Valentine's Day gift advisor called Gifted-AI. Your task is to analyze the uploaded photos and relationship context to suggest thoughtful, personalized gift ideas. Focus on the couple's dynamics, interests, and style visible in the photos. Provide specific, creative gift suggestions that would be meaningful for their relationship.",
+      systemInstruction: `You are a Valentine's Day gift advisor called Gifted-AI. Your task is to analyze the uploaded photos and relationship context to suggest thoughtful, personalized gift ideas. Focus on the couple's dynamics, interests, and style visible in the photos. Provide specific, creative gift suggestions that would be meaningful for their relationship. Respond in ${locationInfo.language} language and use ${locationInfo.currency} for pricing. Only suggest gifts within the specified price range of ${locationInfo.currencySymbol}${priceRange.minPrice} to ${locationInfo.currencySymbol}${priceRange.maxPrice}.`,
       generationConfig: {
         temperature: 0.7,
       }
@@ -45,23 +53,36 @@ export async function generateGiftIdeas(
 - Their visible interests and style in the photo
 - The relationship context provided
 - A mix of practical and romantic gifts
-- Different price ranges (budget-friendly to premium)
+- Gifts within the price range of ${locationInfo.currencySymbol}${priceRange.minPrice} to ${locationInfo.currencySymbol}${priceRange.maxPrice}
 - Personal and customizable options
 - Experiences they might enjoy together
 - Items that reflect their shared memories or interests
+- Local availability in ${locationInfo.country}
+
+Please respond in ${locationInfo.language} language.
 
 Format each suggestion with:
 1. Gift name
 2. Brief description of why it would be meaningful
-3. Estimated price range`;
+3. Exact price in ${locationInfo.currencySymbol}`;
 
     // Generate content
     const result = await model.generateContent([prompt, imageData]);
     const response = await result.response;
     const text = response.text();
 
-    // Parse the text into an array of gift ideas
-    const giftIdeas = text.split('\n\n').filter(idea => idea.trim() !== '');
+    // Parse the text into an array of gift ideas and clean up markdown
+    const giftIdeas = text
+      .split('\n\n')
+      .filter(idea => idea.trim() !== '')
+      .map(idea => {
+        // Remove markdown bold/italic formatting
+        return idea
+          .replace(/\*\*/g, '')  // Remove bold
+          .replace(/\*/g, '')    // Remove italic
+          .replace(/:/g, ' -')   // Replace colons with dashes
+          .trim();
+      });
 
     return {
       success: true,

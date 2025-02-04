@@ -2,6 +2,7 @@
 create table posts (
     id bigint primary key generated always as identity,
     caption text not null,
+    user_input text, -- Stores combined user inputs
     user_ip text,
     user_id uuid,
     uploads text[], -- Array of text for storing multiple upload URLs/paths
