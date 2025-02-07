@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { LocationInfo } from './location-utils';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { LocationInfo } from "./location-utils";
 
 if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable');
+  throw new Error("Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable");
 }
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
@@ -26,18 +26,18 @@ export async function generateGiftIdeas(
 ): Promise<GiftIdeaResult> {
   try {
     // Remove the data URL prefix to get just the base64 data
-    const base64Data = imageBase64.split(';base64,')[1];
+    const base64Data = imageBase64.split(";base64,")[1];
     if (!base64Data) {
-      throw new Error('Invalid image data format');
+      throw new Error("Invalid image data format");
     }
 
     // Create model instance with the new model
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
-      systemInstruction: `You are a Valentine's Day gift advisor called Gifted-AI. Your task is to analyze the uploaded photos and relationship context to suggest thoughtful, personalized gift ideas. Focus on the couple's dynamics, interests, and style visible in the photos. Provide specific, creative gift suggestions that would be meaningful for their relationship. Respond in ${locationInfo.language} language and use ${locationInfo.currency} for pricing. Only suggest gifts within the specified price range of ${locationInfo.currencySymbol}${priceRange.minPrice} to ${locationInfo.currencySymbol}${priceRange.maxPrice}.`,
+      systemInstruction: `You are a gift advisor called Gifted-AI. Your task is to analyze the uploaded photos and relationship context to suggest thoughtful, personalized gift ideas. Focus on the interests of the mentioned person and style visible in the photos. Provide specific, creative gift suggestions that would be meaningful for their relationship. Respond in ${locationInfo.language} language and use ${locationInfo.currency} for pricing. Only suggest gifts within the specified price range of ${locationInfo.currencySymbol}${priceRange.minPrice} to ${locationInfo.currencySymbol}${priceRange.maxPrice}. If a gift will be bough for a kid who looks under 18, add this instagram account to the list of suggesstions: https://www.instagram.com/dekakids24/ , they are creating custom story books for kids with the help of AI`,
       generationConfig: {
         temperature: 0.7,
-      }
+      },
     });
 
     // Prepare the image data
@@ -73,27 +73,29 @@ Format each suggestion with:
 
     // Parse the text into an array of gift ideas and clean up markdown
     const giftIdeas = text
-      .split('\n\n')
-      .filter(idea => idea.trim() !== '')
-      .map(idea => {
+      .split("\n\n")
+      .filter((idea) => idea.trim() !== "")
+      .map((idea) => {
         // Remove markdown bold/italic formatting
         return idea
-          .replace(/\*\*/g, '')  // Remove bold
-          .replace(/\*/g, '')    // Remove italic
-          .replace(/:/g, ' -')   // Replace colons with dashes
+          .replace(/\*\*/g, "") // Remove bold
+          .replace(/\*/g, "") // Remove italic
+          .replace(/:/g, " -") // Replace colons with dashes
           .trim();
       });
 
     return {
       success: true,
-      giftIdeas
+      giftIdeas,
     };
-
   } catch (error) {
-    console.error('Error generating gift ideas:', error);
+    console.error("Error generating gift ideas:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'An error occurred while generating gift ideas'
+      error:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while generating gift ideas",
     };
   }
 }
